@@ -26,6 +26,7 @@
 #include <variant>
 
 #include "absl/base/config.h"
+#include "absl/base/macros.h"
 #include "absl/utility/utility.h"
 
 namespace absl {
@@ -35,7 +36,11 @@ using std::get;
 using std::get_if;
 using std::holds_alternative;
 using std::monostate;
-using std::variant;
+
+template <typename... Types>
+using variant ABSL_REFACTOR_INLINE
+    = std::variant<Types...>;
+
 using std::variant_alternative;
 using std::variant_alternative_t;
 using std::variant_npos;
