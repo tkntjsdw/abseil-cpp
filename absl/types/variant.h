@@ -23,6 +23,8 @@
 #ifndef ABSL_TYPES_VARIANT_H_
 #define ABSL_TYPES_VARIANT_H_
 
+#include <stddef.h>
+
 #include <variant>
 
 #include "absl/base/config.h"
@@ -31,20 +33,35 @@
 
 namespace absl {
 ABSL_NAMESPACE_BEGIN
-using std::bad_variant_access;
+
+using bad_variant_access ABSL_REFACTOR_INLINE
+    = std::bad_variant_access;
+
 using std::get;
 using std::get_if;
 using std::holds_alternative;
-using std::monostate;
+
+using monostate ABSL_REFACTOR_INLINE
+    = std::monostate;
 
 template <typename... Types>
 using variant ABSL_REFACTOR_INLINE
     = std::variant<Types...>;
 
-using std::variant_alternative;
-using std::variant_alternative_t;
+template <size_t I, typename T>
+using variant_alternative ABSL_REFACTOR_INLINE
+    = std::variant_alternative<I, T>;
+
+template <size_t I, typename T>
+using variant_alternative_t ABSL_REFACTOR_INLINE
+    = std::variant_alternative_t<I, T>;
+
 using std::variant_npos;
-using std::variant_size;
+
+template <typename T>
+using variant_size ABSL_REFACTOR_INLINE
+    = std::variant_size<T>;
+
 using std::variant_size_v;
 using std::visit;
 
