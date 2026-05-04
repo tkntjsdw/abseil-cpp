@@ -21,6 +21,7 @@
 #include <utility>
 
 #include "absl/base/config.h"
+#include "absl/base/macros.h"
 
 // TODO(b/290784225): Include what you use cleanup required.
 #include "absl/meta/type_traits.h"
@@ -43,7 +44,11 @@ using std::in_place_type;
 using std::in_place_type_t;
 using std::index_sequence;
 using std::index_sequence_for;
-using std::integer_sequence;
+
+template <class T, T... I>
+using integer_sequence ABSL_DEPRECATE_AND_INLINE() =
+    std::integer_sequence<T, I...>;
+
 using std::make_from_tuple;
 using std::make_index_sequence;
 using std::make_integer_sequence;
