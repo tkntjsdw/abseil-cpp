@@ -27,6 +27,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
+#include "absl/base/internal/hardening.h"
 #include "absl/base/macros.h"
 #include "absl/container/internal/compressed_tuple.h"
 #include "absl/memory/memory.h"
@@ -476,7 +477,7 @@ class Storage {
   }
 
   void SubtractSize(SizeType<A> count) {
-    ABSL_HARDENING_ASSERT(count <= GetSize());
+    absl::base_internal::HardeningAssertLE(count, GetSize());
 
     GetSizeAndIsAllocated() -= count << static_cast<SizeType<A>>(1);
   }
