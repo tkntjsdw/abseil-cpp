@@ -40,6 +40,14 @@
 #include "absl/base/config.h"
 #include "absl/base/options.h"
 
+#ifdef _MSC_VER
+#ifdef __cplusplus
+extern "C"
+#endif
+void __cdecl __ud2(void);
+#pragma intrinsic(__ud2)
+#endif
+
 // ABSL_BLOCK_TAIL_CALL_OPTIMIZATION
 //
 // Instructs the compiler to avoid optimizing tail-call recursion. This macro is
@@ -200,6 +208,8 @@
 #if ABSL_HAVE_BUILTIN(__builtin_trap) || \
     (defined(__GNUC__) && !defined(__clang__))
 #define ABSL_INTERNAL_IMMEDIATE_ABORT_IMPL() __builtin_trap()
+#elif defined(_MSC_VER)
+#define ABSL_INTERNAL_IMMEDIATE_ABORT_IMPL() (__ud2(), __assume(false))
 #else
 #define ABSL_INTERNAL_IMMEDIATE_ABORT_IMPL() abort()
 #endif
