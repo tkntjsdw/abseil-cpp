@@ -1434,13 +1434,25 @@ inline void AssertIsValidForComparison(const ctrl_t* ctrl,
                                        GenerationType generation,
                                        const GenerationType* generation_ptr) {
   if (!SwisstableDebugEnabled()) return;
-  const bool ctrl_is_valid_for_comparison =
-      ctrl == nullptr || ctrl == DefaultIterControl() || IsFull(*ctrl);
+  const bool ctrl_is_valid_for_comparison = [ctrl]() {
+    if (ctrl == nullptr) return true;
+    if (ctrl == DefaultIterControl()) return true;
+    // Note: if the following line crashes, then it's likely that `ctrl` is from
+    // a backing array that has been deallocated. If you see a crash here, it
+    // likely means that you are comparing an invalid iterator from a table that
+    // has rehashed, moved, or been destroyed.
+    return IsFull(*ctrl);
+  }();
   if (SwisstableGenerationsEnabled()) {
     if (ABSL_PREDICT_FALSE(generation != *generation_ptr)) {
-      ABSL_RAW_LOG(FATAL,
-                   "Invalid iterator comparison. The table could have rehashed "
-                   "or moved since this iterator was initialized.");
+      // Note: in the case of a rehash, we would expect to see a sanitizer crash
+      // above when `ctrl` is dereferenced so this assertion will only catch
+      // moved table cases, unless we're using a custom allocator that does not
+      // deallocate the old backing array (e.g. an arena allocator).
+      ABSL_RAW_LOG(
+          FATAL,
+          "Invalid iterator comparison. The table was likely moved (or "
+          "possibly rehashed) since this iterator was initialized.");
     }
     if (ABSL_PREDICT_FALSE(!ctrl_is_valid_for_comparison)) {
       ABSL_RAW_LOG(

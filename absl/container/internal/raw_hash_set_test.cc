@@ -2976,6 +2976,19 @@ TYPED_TEST(SooTest, IteratorInvalidAssertsEqualityOperatorRehash) {
   EXPECT_DEATH_IF_SUPPORTED(void(iter == t.begin()), InvalidIteratorMatcher());
 }
 
+TYPED_TEST(SooTest, IteratorInvalidAssertsEqualityOperatorMovedFrom) {
+  if (!SwisstableGenerationsEnabled())
+    GTEST_SKIP() << "Generations not enabled.";
+
+  TypeParam t;
+  for (int i = 0; i < 10; ++i) t.insert(i);
+  auto iter = t.begin();
+
+  TypeParam t2 = std::move(t);
+
+  EXPECT_DEATH_IF_SUPPORTED(void(iter == t2.begin()), InvalidIteratorMatcher());
+}
+
 #if defined(ABSL_INTERNAL_HASHTABLEZ_SAMPLE)
 template <typename T>
 class RawHashSamplerTest : public testing::Test {};
