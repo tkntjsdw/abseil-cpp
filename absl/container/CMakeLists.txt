@@ -129,6 +129,7 @@ absl_cc_library(
     absl::config
     absl::core_headers
     absl::dynamic_annotations
+    absl::hardening
     absl::iterator_traits_internal
     absl::throw_delegate
     absl::memory
@@ -1214,6 +1215,7 @@ absl_cc_library(
   DEPS
      absl::config
      absl::core_headers
+     absl::hardening
      absl::iterator_traits_internal
      absl::layout
 )
