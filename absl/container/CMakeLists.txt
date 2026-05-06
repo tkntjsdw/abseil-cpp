@@ -35,6 +35,7 @@ absl_cc_library(
     absl::container_memory
     absl::cord
     absl::core_headers
+    absl::hardening
     absl::layout
     absl::memory
     absl::raw_logging_internal

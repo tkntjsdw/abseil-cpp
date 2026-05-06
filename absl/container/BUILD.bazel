@@ -1147,6 +1147,7 @@ cc_library(
         ":layout",
         "//absl/base:config",
         "//absl/base:core_headers",
+        "//absl/base:hardening",
         "//absl/base:raw_logging_internal",
         "//absl/base:throw_delegate",
         "//absl/hash:weakly_mixed_integer",
