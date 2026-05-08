@@ -27,7 +27,6 @@ absl_cc_library(
     absl::base
     absl::config
     absl::core_headers
-    absl::hardening
     absl::type_traits
     absl::utility
   PUBLIC

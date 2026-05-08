@@ -65,7 +65,6 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
-#include "absl/base/internal/hardening.h"
 #include "absl/base/macros.h"
 #include "absl/base/nullability.h"
 #include "absl/base/optimization.h"
@@ -730,7 +729,7 @@ using CanAssignReferenceWrapper = TrueAlias<
     /*Raises a fatal error when the AnyInvocable is invoked after a move*/     \
     static ReturnType InvokedAfterMove(                                        \
         TypeErasedState*, ForwardedParameterType<P>...) noexcept(noex) {       \
-      absl::base_internal::HardeningAssert(false);                             \
+      ABSL_HARDENING_ASSERT(false && "AnyInvocable use-after-move");           \
       std::terminate();                                                        \
     }                                                                          \
                                                                                \
