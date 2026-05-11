@@ -634,6 +634,7 @@ class PerTableSeedImpl {
 template <HashtableCapacityStorageMode StorageMode>
 class HashtableInlineDataImpl {
  public:
+  static constexpr HashtableCapacityStorageMode kStorageMode = StorageMode;
   using PerTableSeed = PerTableSeedImpl<
       std::conditional_t<StorageMode == kCapacityByValue, uint16_t, uint8_t>>;
   using HashtableCapacity = HashtableCapacityImpl<StorageMode>;
@@ -747,7 +748,11 @@ static_assert(
     sizeof(HashtableInlineDataImpl<kCapacityByLog>::HashtableCapacity) == 1);
 static_assert(sizeof(HashtableInlineDataImpl<kCapacityByLog>) == 8);
 
+#ifndef ABSL_SWISSTABLE_INTERNAL_ENABLE_CAPACITY_BY_LOG
 using HashtableInlineData = HashtableInlineDataImpl<kCapacityByValue>;
+#else
+using HashtableInlineData = HashtableInlineDataImpl<kCapacityByLog>;
+#endif  // ABSL_SWISSTABLE_INTERNAL_ENABLE_CAPACITY_BY_LOG
 using PerTableSeed = HashtableInlineData::PerTableSeed;
 using HashtableCapacity = HashtableInlineData::HashtableCapacity;
 
