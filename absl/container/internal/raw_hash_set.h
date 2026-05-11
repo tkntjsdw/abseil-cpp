@@ -409,6 +409,8 @@ inline bool IsEmptyGeneration(const GenerationType* generation) {
 // - In order to prevent user code from depending on iteration order for small
 //   tables, we would need to randomize the iteration order somehow.
 constexpr size_t SooCapacity() { return 1; }
+// Maximum capacity of a table where we don't need to hash any keys.
+constexpr size_t MaxSmallCapacity() { return 1; }
 // Sentinel type to indicate SOO CommonFields construction.
 struct soo_tag_t {};
 // Sentinel type to indicate SOO CommonFields construction with full size.
@@ -426,7 +428,9 @@ struct no_seed_empty_tag_t {};
 constexpr bool IsValidCapacity(size_t n) { return ((n + 1) & n) == 0 && n > 0; }
 
 // Whether a table is small enough that we don't need to hash any keys.
-constexpr bool IsSmallCapacity(size_t capacity) { return capacity <= 1; }
+constexpr bool IsSmallCapacity(size_t capacity) {
+  return capacity <= MaxSmallCapacity();
+}
 
 // Converts `n` into the next valid capacity, per `IsValidCapacity`.
 constexpr size_t NormalizeCapacity(size_t n) {
@@ -566,6 +570,16 @@ class HashtableCapacityImpl {
                                            : (size_t{1} << capacity_data_) - 1;
   }
 
+  constexpr bool is_small() const {
+    // Small tables have capacity 0 or 1. This expression is valid for both
+    // capacity storage modes.
+    // Comparing capacity_data_ directly leads to a better generated code.
+    // One byte comparison is used before computing the capacity in order to
+    // detect small tables faster for critical path.
+    static_assert(MaxSmallCapacity() == 1);
+    return capacity_data_ <= 1;
+  }
+
  private:
   // We use these sentinel capacity values in debug mode to indicate different
   // classes of bugs.
@@ -657,6 +671,7 @@ class HashtableInlineDataImpl {
     return HashtableCapacity::FromRawData(capacity_internal_);
   }
   size_t capacity() const { return maybe_invalid_capacity().capacity(); }
+  bool is_small() const { return maybe_invalid_capacity().is_small(); }
 
   void set_capacity(HashtableCapacity c) { capacity_internal_ = c.ToRawData(); }
   void set_capacity(size_t c) { set_capacity(HashtableCapacity(c)); }
@@ -1245,7 +1260,7 @@ class CommonFields : public CommonFieldsGenerationInfo {
   void set_capacity(size_t c) {
     set_capacity(HashtableCapacity(c));
   }
-  bool is_small() const { return IsSmallCapacity(capacity()); }
+  bool is_small() const { return inline_data_.is_small(); }
 
   // The number of slots we can still fill without needing to rehash.
   // This is stored in the heap allocation before the control bytes.
