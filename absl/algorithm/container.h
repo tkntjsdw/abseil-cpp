@@ -52,6 +52,7 @@
 
 #include "absl/algorithm/algorithm.h"
 #include "absl/base/config.h"
+#include "absl/base/internal/hardening.h"
 #include "absl/base/internal/iterator_traits.h"
 #include "absl/base/macros.h"
 #include "absl/meta/type_traits.h"
@@ -110,40 +111,37 @@ ABSL_INTERNAL_CONSTEXPR_SINCE_CXX17 ContainerIter<C> c_end(C& c) {
 // Helper to check that the `OutputRange` has enough space.
 // Only performs the check if the iterators are ForwardIterators or better.
 template <typename InputSequence, typename Size, typename OutputRange>
-ABSL_INTERNAL_CONSTEXPR_SINCE_CXX17 bool CheckCopyNSize(InputSequence& input,
+ABSL_INTERNAL_CONSTEXPR_SINCE_CXX17 void AssertCopyNSize(InputSequence& input,
                                                         Size n,
                                                         OutputRange& output) {
   using InputIter = ContainerIter<InputSequence>;
   using OutputIter = ContainerIter<OutputRange>;
 
   if constexpr (base_internal::IsAtLeastForwardIterator<InputIter>::value) {
-    if (n > std::distance(container_algorithm_internal::c_begin(input),
-                          container_algorithm_internal::c_end(input))) {
-      return false;
-    }
+    base_internal::HardeningAssert(
+        n <= std::distance(container_algorithm_internal::c_begin(input),
+                           container_algorithm_internal::c_end(input)));
   }
   if constexpr (base_internal::IsAtLeastForwardIterator<OutputIter>::value) {
-    if (n > std::distance(container_algorithm_internal::c_begin(output),
-                          container_algorithm_internal::c_end(output))) {
-      return false;
-    }
+    base_internal::HardeningAssert(
+        n <= std::distance(container_algorithm_internal::c_begin(output),
+                           container_algorithm_internal::c_end(output)));
   }
-  return true;
 }
 
 template <typename InputSequence, typename OutputRange>
-ABSL_INTERNAL_CONSTEXPR_SINCE_CXX17 bool CheckCopySize(InputSequence& input,
+ABSL_INTERNAL_CONSTEXPR_SINCE_CXX17 void AssertCopySize(InputSequence& input,
                                                        OutputRange& output) {
   using InputIter = ContainerIter<InputSequence>;
   using OutputIter = ContainerIter<OutputRange>;
   if constexpr (base_internal::IsAtLeastForwardIterator<InputIter>::value &&
                 base_internal::IsAtLeastForwardIterator<OutputIter>::value) {
-    return std::distance(container_algorithm_internal::c_begin(input),
-                         container_algorithm_internal::c_end(input)) <=
-           std::distance(container_algorithm_internal::c_begin(output),
-                         container_algorithm_internal::c_end(output));
+    base_internal::HardeningAssert(
+        std::distance(container_algorithm_internal::c_begin(input),
+                      container_algorithm_internal::c_end(input)) <=
+        std::distance(container_algorithm_internal::c_begin(output),
+                      container_algorithm_internal::c_end(output)));
   }
-  return true;
 }
 
 template <typename T>
@@ -614,8 +612,7 @@ ABSL_INTERNAL_CONSTEXPR_SINCE_CXX20
                              InputSequence>::value,
                      void>
     c_copy(const InputSequence& input, OutputRange&& output) {
-  ABSL_HARDENING_ASSERT(
-      container_algorithm_internal::CheckCopySize(input, output));
+  container_algorithm_internal::AssertCopySize(input, output);
   absl::c_copy(input, container_algorithm_internal::c_begin(
                           std::forward<OutputRange>(output)));
 }
@@ -655,8 +652,7 @@ ABSL_INTERNAL_CONSTEXPR_SINCE_CXX20 std::enable_if_t<
         !container_algorithm_internal::IsMultidimensionalArray<C>::value,
     void>
 c_copy_n(const C& input, Size n, OutputRange&& output) {
-  ABSL_HARDENING_ASSERT(
-      container_algorithm_internal::CheckCopyNSize(input, n, output));
+  container_algorithm_internal::AssertCopyNSize(input, n, output);
   absl::c_copy_n(
       input, n,
       container_algorithm_internal::c_begin(std::forward<OutputRange>(output)));

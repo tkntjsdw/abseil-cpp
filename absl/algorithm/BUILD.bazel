@@ -70,6 +70,7 @@ cc_library(
         ":algorithm",
         "//absl/base:config",
         "//absl/base:core_headers",
+        "//absl/base:hardening",
         "//absl/base:iterator_traits_internal",
         "//absl/meta:type_traits",
     ],
