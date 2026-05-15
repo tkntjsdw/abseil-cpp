@@ -37,7 +37,13 @@ ABSL_NAMESPACE_BEGIN
 // abstractions for platforms that had not yet provided them. Those
 // platforms are no longer supported. New code should simply use the
 // the ones from std directly.
-using std::apply;
+template <class F, class T>
+ABSL_DEPRECATE_AND_INLINE()
+constexpr decltype(auto)
+    apply(F&& f, T&& t) noexcept(noexcept(std::apply(std::declval<F>(),
+                                                     std::declval<T>()))) {
+  return std::apply(std::forward<F>(f), std::forward<T>(t));
+}
 
 template <class T1, class T2 = T1>
 ABSL_DEPRECATE_AND_INLINE()
