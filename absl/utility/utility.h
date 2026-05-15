@@ -112,7 +112,19 @@ template <class T, T N>
 using make_integer_sequence ABSL_DEPRECATE_AND_INLINE() =
     std::make_integer_sequence<T, N>;
 
-using std::move;
+template <class It, class OutIt>
+[[deprecated("Use std::move instead.")]]
+constexpr OutIt move(It&& begin, It&& end, OutIt&& output) {
+  return std::move(std::forward<It>(begin), std::forward<It>(end),
+                   std::forward<OutIt>(output));
+}
+
+template <class T>
+[[deprecated("Use std::move instead.")]]
+[[nodiscard]] constexpr std::remove_reference_t<T>&&
+move(T&& arg ABSL_ATTRIBUTE_LIFETIME_BOUND) noexcept {
+  return std::move(arg);  // NOLINT(bugprone-move-forwarding-reference)
+}
 
 #if ABSL_INTERNAL_CPLUSPLUS_LANG >= 202002L
 // Backfill for std::nontype_t. An instance of this class can be provided as a
